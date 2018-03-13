@@ -13,9 +13,9 @@ func PeerManager() *peerManager{
 	return instance
 }
 
-func (Self *peerManager) NewPeer(name string, creator func() Peer) Peer{
+func (Self *peerManager) NewPeer(name string, queue EventQueue, creator func(queue EventQueue) Peer) Peer{
 	if _, ok := Self.peerMap[name]; !ok {
-		Self.peerMap[name] = creator()
+		Self.peerMap[name] = creator(queue)
 		Self.peerMap[name].SetName(name)
 	}
 	return Self.peerMap[name]

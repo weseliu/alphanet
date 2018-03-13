@@ -45,7 +45,7 @@ func (Self *wsSession) receiveThread() {
 		if result == net.EventResultOK {
 			ev := net.NewEvent(net.EventReceive, Self)
 			ev.Data = data.([]byte)
-			ev.Session = *Self
+			ev.Session = Self
 			Self.Peer().OnEvent(ev)
 		}
 	}
