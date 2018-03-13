@@ -29,6 +29,7 @@ type PeerBase struct {
 	runningGuard sync.RWMutex
 
 	EventQueue
+	EventHandler
 	SessionManager
 }
 
@@ -83,10 +84,6 @@ func (Self *PeerBase) Stop(){
 
 func (Self *PeerBase) OnEvent(event *Event) {
 	Self.EventQueue.Post(func(){
-		Self.eventHandler(event)
-	});
-}
-
-func (Self *PeerBase) eventHandler(event *Event) {
-
+		Self.FireEvent(event)
+	})
 }
