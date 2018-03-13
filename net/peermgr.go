@@ -5,7 +5,7 @@ type peerManager struct {
 }
 
 var instance *peerManager
-func GetInstance() *peerManager{
+func PeerManager() *peerManager{
 	if instance == nil{
 		instance = &peerManager{}
 		instance.peerMap = make(map[string] Peer)
@@ -13,7 +13,7 @@ func GetInstance() *peerManager{
 	return instance
 }
 
-func (Self *peerManager) New(name string, creator func() Peer) Peer{
+func (Self *peerManager) NewPeer(name string, creator func() Peer) Peer{
 	if _, ok := Self.peerMap[name]; !ok {
 		Self.peerMap[name] = creator()
 		Self.peerMap[name].SetName(name)
@@ -21,7 +21,7 @@ func (Self *peerManager) New(name string, creator func() Peer) Peer{
 	return Self.peerMap[name]
 }
 
-func (Self *peerManager) Get(name string) Peer{
+func (Self *peerManager) GetPeer(name string) Peer{
 	if peer, ok := Self.peerMap[name]; ok {
 		return peer
 	}
