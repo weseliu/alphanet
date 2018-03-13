@@ -53,8 +53,6 @@ const (
 type Event struct {
 	UID     int64
 	Type    EventType
-	MsgID   uint32
-	Msg     interface{}
 	Data    []byte
 	Tag     interface{}
 	Session Session
@@ -64,8 +62,6 @@ func (Self *Event) Clone() *Event {
 	c := &Event{
 		UID:        Self.UID,
 		Type:       Self.Type,
-		MsgID:      Self.MsgID,
-		Msg:        Self.Msg,
 		Tag:        Self.Tag,
 		Session:    Self.Session,
 		Data:       make([]byte, len(Self.Data)),

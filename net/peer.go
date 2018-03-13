@@ -17,6 +17,7 @@ type Peer interface {
 
 	Start(address string) Peer
 	Stop()
+	OnEvent(event *Event)
 }
 
 type PeerBase struct {
@@ -77,5 +78,15 @@ func (Self *PeerBase) Start(address string) Peer{
 }
 
 func (Self *PeerBase) Stop(){
+
+}
+
+func (Self *PeerBase) OnEvent(event *Event) {
+	Self.EventQueue.Post(func(){
+		Self.eventHandler(event)
+	});
+}
+
+func (Self *PeerBase) eventHandler(event *Event) {
 
 }

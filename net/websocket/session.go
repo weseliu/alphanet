@@ -3,49 +3,17 @@ package websocket
 import (
 	"github.com/gorilla/websocket"
 	"github.com/weseliu/alphanet/net"
-	"github.com/weseliu/alice/network"
 )
 
 type wsSession struct {
-	id int64
-	peer net.Peer
+	*net.SessionBase
 	conn *websocket.Conn
-	tag interface{}
 	OnClose func()
 }
 
-func (Self *wsSession) SetID(id int64){
-	Self.id = id
-}
-
-func (Self *wsSession) ID() int64{
-	return Self.id
-}
-
-func (Self *wsSession) SetTag(tag interface{}){
-	Self.tag = tag
-}
-
-func (Self *wsSession) Tag() interface{}{
-	return Self.tag
-}
-
-func (Self *wsSession) Peer() net.Peer{
-	return Self.peer
-}
-
 func (Self *wsSession) Send(data interface{}){
-	event := network.NewEvent(network.EventSend, Self)
-	event.Msg = data
-	Self.RawSend(event)
-}
-
-func (Self *wsSession) RawSend(event *net.Event)  {
-	event.Session = Self
-
 	go func() {
-		raw := Self.Peer().Encode(event.Msg)
-		Self.conn.WriteMessage(websocket.BinaryMessage, raw)
+		Self.conn.WriteMessage(websocket.BinaryMessage, data.([]byte))
 	}()
 }
 
@@ -53,36 +21,32 @@ func (Self *wsSession) Close(){
 	Self.conn.Close()
 }
 
-func (Self *wsSession) readPacket() (msgId uint32, msg interface{}, result network.EventResult) {
+func (Self *wsSession) readPacket() (data interface{}, result net.EventResult) {
 	t, raw, err := Self.conn.ReadMessage()
 	if err != nil {
-		return 0, nil, network.EventResultSocketError
+		return 0, net.EventResultSocketError
 	}
 
 	switch t {
 	case websocket.TextMessage:
-		return 0, nil, network.EventResultCodecError
+		return 0, net.EventResultCodecError
 	case websocket.CloseMessage:
-		return 0, nil, network.EventResultRequestClose
+		return 0, net.EventResultRequestClose
 	case websocket.BinaryMessage:
-		msgId, msg = Self.Peer().Decode(raw)
+		data = raw
 	}
 
-	return msgId, msg, network.EventResultOK
+	return data, net.EventResultOK
 }
 
 func (Self *wsSession) receiveThread() {
 	for {
-		msgId, msg, result := Self.readPacket()
-		if result == network.EventResultOK {
-			ev := network.NewEvent(network.EventReceive, Self)
-			ev.MsgID = msgId
-			ev.Msg = msg
-
-			var acceptor = Self.Peer().(*wsAcceptor)
-			acceptor.Queue().Post(func(){
-				acceptor.OnEvent(ev)
-			})
+		data, result := Self.readPacket()
+		if result == net.EventResultOK {
+			ev := net.NewEvent(net.EventReceive, Self)
+			ev.Data = data.([]byte)
+			ev.Session = *Self
+			Self.Peer().OnEvent(ev)
 		}
 	}
 }
@@ -92,10 +56,10 @@ func (Self *wsSession) run() {
 }
 
 func NewSession(c *websocket.Conn, p net.Peer) *wsSession {
-	self := &wsSession{
-		peer: p,
+	session := &wsSession{
 		conn: c,
 	}
-	return self
+	session.SetPeer(p)
+	return session
 }
 
