@@ -14,7 +14,7 @@ func main() {
 
 	peer.RegisterEvent(net.EventReceive, func(event *net.Event){
 		log.Print("EventReceive : ", string(event.Data))
-		event.Session.Send(event.Data);
+		event.Session.Send(event.Data)
 	})
 
 	peer.RegisterEvent(net.EventConnected, func(event *net.Event){
