@@ -30,27 +30,25 @@ func (Self *wsSession) readPacket() (data interface{}, result net.EventResult) {
 		return 0, net.EventResultSocketError
 	}
 
-	switch t {
-	case websocket.TextMessage:
-		return 0, net.EventResultCodecError
-	case websocket.CloseMessage:
-		return 0, net.EventResultRequestClose
-	case websocket.BinaryMessage:
-		data = raw
+	if t == websocket.TextMessage || t == websocket.BinaryMessage {
+		return raw, net.EventResultOK
 	}
 
-	return data, net.EventResultOK
+	return 0, net.EventResultRequestClose
 }
 
 func (Self *wsSession) receiveThread() {
 	for {
 		data, result := Self.readPacket()
+
+		var event *net.Event = nil
 		if result == net.EventResultOK {
-			ev := net.NewEvent(net.EventReceive, Self)
-			ev.Data = data.([]byte)
-			ev.Session = Self
-			Self.Peer().OnEvent(ev)
+			event = net.NewEvent(net.EventReceive, Self)
+			event.Data = data.([]byte)
+		} else if result == net.EventResultRequestClose || result == net.EventResultSocketError {
+			event = net.NewEvent(net.EventClosed, Self)
 		}
+		Self.Peer().OnEvent(event)
 
 		if result == net.EventResultRequestClose || result == net.EventResultSocketError{
 			Self.Close()

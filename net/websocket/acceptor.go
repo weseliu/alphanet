@@ -72,6 +72,8 @@ func NewAcceptor(q net.EventQueue) net.Peer {
 		PeerBase : &net.PeerBase{
 			EventQueue : q,
 			SessionManager : net.NewSessionManager(),
+			EventHandler : &net.EventHandlerImplement{
+			},
 		},
 	}
 

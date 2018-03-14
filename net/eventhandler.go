@@ -9,7 +9,7 @@ type EventHandlerImplement struct {
 	eventHandlerMap map[EventType][]func(*Event)
 }
 
-func (Self *EventHandlerImplement) RegisterMessage(event EventType, callback func(*Event)) {
+func (Self *EventHandlerImplement) RegisterEvent(event EventType, callback func(*Event)) {
 	if Self.eventHandlerMap == nil{
 		Self.eventHandlerMap = make(map[EventType][]func(*Event))
 	}

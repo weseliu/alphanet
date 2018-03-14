@@ -18,6 +18,10 @@ type Peer interface {
 	Start(address string) Peer
 	Stop()
 	OnEvent(event *Event)
+
+	EventQueue
+	EventHandler
+	SessionManager
 }
 
 type PeerBase struct {
