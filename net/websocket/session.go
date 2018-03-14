@@ -18,6 +18,9 @@ func (Self *wsSession) Send(data interface{}){
 }
 
 func (Self *wsSession) Close(){
+	if Self.OnClose != nil {
+		Self.OnClose()
+	}
 	Self.conn.Close()
 }
 
@@ -48,6 +51,11 @@ func (Self *wsSession) receiveThread() {
 			ev.Session = Self
 			Self.Peer().OnEvent(ev)
 		}
+
+		if result == net.EventResultRequestClose || result == net.EventResultSocketError{
+			Self.Close()
+			break
+		}
 	}
 }
 
@@ -57,6 +65,8 @@ func (Self *wsSession) run() {
 
 func NewSession(c *websocket.Conn, p net.Peer) *wsSession {
 	session := &wsSession{
+		SessionBase : &net.SessionBase{
+		},
 		conn: c,
 	}
 	session.SetPeer(p)
