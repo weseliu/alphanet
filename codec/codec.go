@@ -1,5 +1,7 @@
 package codec
 
+import "errors"
+
 type Codec interface {
 	Name() string
 	Encode(msg interface{}) ([]byte, error)
@@ -26,10 +28,16 @@ func (Self *codecManager)RegisterCodec(codec Codec){
 	Self.codecMap[codec.Name()] = codec
 }
 
-func (Self *codecManager)Encode(msg interface{}) ([]byte, error){
-	return nil, nil
+func (Self *codecManager)Encode(codecName string, msg interface{}) ([]byte, error){
+	if Self.codecMap[codecName] != nil {
+		return Self.codecMap[codecName].Encode(msg)
+	}
+	return nil, errors.New("encode codec not exist")
 }
 
-func (Self *codecManager)Decode(data []byte, msg interface{}) error{
-	return nil
+func (Self *codecManager)Decode(codecName string, data []byte, msg interface{}) error{
+	if Self.codecMap[codecName] != nil {
+		return Self.codecMap[codecName].Decode(data, msg)
+	}
+	return errors.New("decode codec not exist")
 }
