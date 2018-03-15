@@ -1,6 +1,9 @@
 package codec
 
-import "errors"
+import (
+	"errors"
+	"go/types"
+)
 
 type Codec interface {
 	Name() string
@@ -10,6 +13,7 @@ type Codec interface {
 
 type codecManager struct {
 	codecMap map[string] Codec
+	messageMeta map[string] map[string] types.Type
 }
 
 var instance *codecManager
@@ -26,6 +30,10 @@ func (Self *codecManager)RegisterCodec(codec Codec){
 		return
 	}
 	Self.codecMap[codec.Name()] = codec
+}
+
+func (Self *codecManager)GetCodec(codecName string) Codec{
+	return Self.codecMap[codecName]
 }
 
 func (Self *codecManager)Encode(codecName string, msg interface{}) ([]byte, error){

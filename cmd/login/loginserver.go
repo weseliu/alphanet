@@ -6,6 +6,12 @@ import (
 	"log"
 )
 
+type test struct {
+	A string
+	B string
+}
+
+
 func main() {
 	queue := net.NewEventQueue()
 	peer := net.PeerManager().NewPeer("login", queue, func(queue net.EventQueue) net.Peer {
