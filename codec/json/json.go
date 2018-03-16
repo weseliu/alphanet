@@ -33,7 +33,7 @@ func (Self *jsonCodec) Decode(data []byte) (msgObj interface{}, err error) {
 	}
 
 	msgObj = codec.BuildMessage(Self.MsgName)
-	err = json.Unmarshal([]byte(Self.MsgData), &msgObj)
+	err = json.Unmarshal([]byte(Self.MsgData), msgObj)
 	return msgObj, err
 }
 

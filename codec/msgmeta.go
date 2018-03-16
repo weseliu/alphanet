@@ -19,8 +19,8 @@ var (
 )
 
 func RegisterMessageMeta(codecName string, msg interface{}) {
-	msgType := reflect.TypeOf(msg)
-	name := msgType.Elem().Name()
+	msgType := reflect.TypeOf(msg).Elem()
+	name := msgType.Name()
 
 	meta := &MessageMeta{
 		Type:  msgType,
