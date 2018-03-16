@@ -7,8 +7,8 @@ import (
 )
 
 type jsonCodec struct {
-	name  string
-	data  []byte
+	MsgName  string `json:"name"`
+	MsgData  string `json:"data"`
 }
 
 func (Self *jsonCodec) Name() string {
@@ -17,20 +17,24 @@ func (Self *jsonCodec) Name() string {
 
 func (Self *jsonCodec) Encode(msgObj interface{}) (data []byte, err error) {
 	v := reflect.TypeOf(msgObj)
-	Self.name = v.Name()
-	Self.data, err = json.Marshal(msgObj)
+	Self.MsgName = v.Name()
+	data, err = json.Marshal(msgObj)
+	Self.MsgData = string(data)
 	if err != nil {
 		return nil, err
 	}
 	return json.Marshal(Self)
 }
 
-func (Self *jsonCodec) Decode(data []byte, msgObj interface{}) (err error) {
+func (Self *jsonCodec) Decode(data []byte) (msgObj interface{}, err error) {
 	err = json.Unmarshal(data, Self)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return json.Unmarshal(data, msgObj)
+
+	msgObj = codec.BuildMessage(Self.MsgName)
+	err = json.Unmarshal([]byte(Self.MsgData), &msgObj)
+	return msgObj, err
 }
 
 func init() {

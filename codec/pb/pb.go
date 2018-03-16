@@ -22,12 +22,12 @@ func (Self *pbCodec) Encode(msgObj interface{}) ([]byte, error) {
 	return data, nil
 }
 
-func (Self *pbCodec) Decode(data []byte, msgObj interface{}) error {
-	err := proto.Unmarshal(data, msgObj.(proto.Message))
+func (Self *pbCodec) Decode(data []byte) (msgObj interface{}, err error) {
+	err = proto.Unmarshal(data, msgObj.(proto.Message))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return msgObj,nil
 }
 
 func init() {

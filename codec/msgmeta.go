@@ -80,3 +80,11 @@ func MessageFullName(rtype reflect.Type) string {
 
 	return b.String()
 }
+
+func BuildMessage(name string) interface{} {
+	var meta = MessageMetaByName(name)
+	if meta != nil {
+		return reflect.New(meta.Type).Interface()
+	}
+	return nil
+}

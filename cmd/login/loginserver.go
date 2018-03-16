@@ -4,13 +4,9 @@ import (
 	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/net/websocket"
 	"log"
+	"github.com/weseliu/alphanet/codec"
+	"github.com/weseliu/alphanet/cmd/login/protocal"
 )
-
-type test struct {
-	A string
-	B string
-}
-
 
 func main() {
 	queue := net.NewEventQueue()
@@ -20,6 +16,15 @@ func main() {
 
 	peer.RegisterEvent(net.EventReceive, func(event *net.Event){
 		log.Print("EventReceive : ", string(event.Data))
+		msg, err := codec.CodecManager().Decode("json", event.Data)
+		var userAuth *protocal.UserAuth = nil
+
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			userAuth = msg.(*protocal.UserAuth)
+			log.Print("userAuth.name : ", userAuth.Name)
+		}
 		event.Session.Send(event.Data)
 	})
 
