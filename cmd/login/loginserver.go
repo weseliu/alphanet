@@ -17,13 +17,13 @@ func main() {
 	peer.RegisterEvent(net.EventReceive, func(event *net.Event){
 		log.Print("EventReceive : ", string(event.Data))
 		msg, err := codec.CodecManager().Decode("json", event.Data)
-		var userAuth *protocal.UserAuth = nil
+		var userAuth **protocal.UserAuth = nil
 
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			userAuth = msg.(*protocal.UserAuth)
-			log.Print("userAuth.name : ", userAuth.Name)
+			userAuth = msg.(**protocal.UserAuth)
+			log.Print("userAuth.name : ", (*userAuth).Name)
 		}
 		event.Session.Send(event.Data)
 	})
