@@ -16,7 +16,7 @@ func (Self *jsonCodec) Name() string {
 }
 
 func (Self *jsonCodec) Encode(msgObj interface{}) (data []byte, err error) {
-	v := reflect.TypeOf(msgObj)
+	v := reflect.TypeOf(msgObj).Elem()
 	Self.MsgName = v.Name()
 	data, err = json.Marshal(msgObj)
 	Self.MsgData = string(data)

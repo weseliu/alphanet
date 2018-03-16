@@ -14,6 +14,10 @@ type UserAuth struct {
 	Platform string `json:"platform"`
 }
 
+type AuthResult struct {
+	Token     string `json:"token"`
+}
+
 func init(){
 	codec.RegisterMessageMeta("json", (*UserAuth)(nil))
 }

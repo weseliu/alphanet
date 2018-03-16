@@ -25,7 +25,15 @@ func main() {
 			userAuth = msg.(*protocal.UserAuth)
 			log.Print("userAuth.name : ", userAuth.Name)
 		}
-		event.Session.Send(event.Data)
+
+		var authResult = &protocal.AuthResult{
+			Token : "aaaaaaaaaaaaaaaaaaaaaaaaa",
+		}
+
+		data, err := codec.CodecManager().Encode("json", authResult)
+		if err == nil {
+			event.Session.Send(data)
+		}
 	})
 
 	peer.RegisterEvent(net.EventConnected, func(event *net.Event){
