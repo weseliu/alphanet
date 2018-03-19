@@ -1,8 +1,8 @@
 package codec
 
 import (
-	"errors"
 	"go/types"
+	"github.com/pkg/errors"
 )
 
 type Codec interface {
