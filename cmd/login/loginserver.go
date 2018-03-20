@@ -6,9 +6,12 @@ import (
 	"log"
 	"github.com/weseliu/alphanet/codec"
 	"github.com/weseliu/alphanet/cmd/login/protocal"
+	"github.com/weseliu/alphanet/db"
 )
 
 func main() {
+	db.Instance().Open("root:@tcp(localhost:3306)/alphanet?charset=utf8")
+
 	queue := net.NewEventQueue()
 	peer := net.PeerManager().NewPeer("login", queue, func(queue net.EventQueue) net.Peer {
 		return websocket.NewAcceptor(queue)
@@ -48,5 +51,6 @@ func main() {
 	queue.StartLoop()
 	queue.Wait()
 	peer.Stop()
+	db.Instance().Close()
 }
 
