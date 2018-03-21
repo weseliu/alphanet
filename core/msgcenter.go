@@ -3,10 +3,11 @@ package core
 import (
 	"reflect"
 	"github.com/weseliu/alphanet/util"
+	"github.com/weseliu/alphanet/net"
 )
 
 type MsgHandler interface {
-	OnMessage(msg interface{})
+	OnMessage(session net.Session, msg interface{})
 }
 
 type msgCenter struct {
@@ -16,12 +17,18 @@ type msgCenter struct {
 var msgCenterInstance *msgCenter = nil
 func MsgCenter() *msgCenter  {
 	if msgCenterInstance == nil{
-		msgCenterInstance = &msgCenter{}
+		msgCenterInstance = &msgCenter{
+			msgHandlers : make(map[reflect.Type] *util.Set),
+		}
 	}
 	return msgCenterInstance
 }
 
 func (Self *msgCenter)RegisterMsgHandler(typ reflect.Type, handler interface{}) {
+	if typ.Kind() == reflect.Ptr{
+		typ = typ.Elem()
+	}
+
 	if Self.msgHandlers[typ] == nil {
 		Self.msgHandlers[typ] = util.NewSet()
 	}
@@ -32,6 +39,10 @@ func (Self *msgCenter)RegisterMsgHandler(typ reflect.Type, handler interface{}) 
 }
 
 func (Self *msgCenter)UnRegisterMsgHandler(typ reflect.Type, handler interface{})  {
+	if typ.Kind() == reflect.Ptr{
+		typ = typ.Elem()
+	}
+
 	if Self.msgHandlers[typ] != nil {
 		Self.msgHandlers[typ].Remove(handler)
 	}
@@ -43,7 +54,7 @@ func (Self *msgCenter)UnRegisterAllMsgHandler(handler interface{})  {
 	}
 }
 
-func (Self *msgCenter)DispatchMessage(msg interface{}) {
+func (Self *msgCenter)DispatchMessage(session net.Session, msg interface{}) {
 	typ := reflect.TypeOf(msg)
 	if typ.Kind() == reflect.Ptr{
 		typ = typ.Elem()
@@ -53,7 +64,7 @@ func (Self *msgCenter)DispatchMessage(msg interface{}) {
 		Self.msgHandlers[typ].Traverse(func(item interface{}) bool {
 			var handler = item.(MsgHandler)
 			if handler != nil {
-				handler.OnMessage(msg)
+				handler.OnMessage(session, msg)
 			}
 			return true
 		})
