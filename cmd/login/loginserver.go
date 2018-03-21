@@ -17,7 +17,7 @@ func main() {
 		return websocket.NewAcceptor(queue)
 	})
 
-	peer.RegisterEvent(net.EventReceive, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventReceive, func(event *net.Event){
 		log.Print("EventReceive : ", string(event.Data))
 		msg, err := codec.CodecManager().Decode("json", event.Data)
 		var userAuth *protocal.UserAuth = nil
@@ -39,11 +39,11 @@ func main() {
 		}
 	})
 
-	peer.RegisterEvent(net.EventConnected, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventConnected, func(event *net.Event){
 		log.Print("EventConnected !")
 	})
 
-	peer.RegisterEvent(net.EventClosed, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventClosed, func(event *net.Event){
 		log.Print("EventClosed !")
 	})
 
