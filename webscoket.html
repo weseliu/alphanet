@@ -1,0 +1,82 @@
+<!DOCTYPE html>  
+<meta charset="utf-8" />  
+<title>WebSocket Test</title>  
+<script language="javascript"type="text/javascript">  
+    var wsUri ="ws://127.0.0.1:8801/login"; 
+    var output;  
+    var index = 0;
+    
+    function init() { 
+        output = document.getElementById("output"); 
+        testWebSocket(); 
+    }  
+ 
+    function testWebSocket() { 
+        websocket = new WebSocket(wsUri); 
+        websocket.onopen = function(evt) { 
+            onOpen(evt) 
+        }; 
+        websocket.onclose = function(evt) { 
+            onClose(evt) 
+        }; 
+        websocket.onmessage = function(evt) { 
+            onMessage(evt) 
+        }; 
+        websocket.onerror = function(evt) { 
+            onError(evt) 
+        }; 
+    }  
+ 
+    function onOpen(evt) { 
+        writeToScreen("CONNECTED"); 
+        
+        var userAuth = {
+            id : 1,
+            name : "aaa",
+            password : "123456",
+            channel : "1",
+            deviceId : "42533233233",
+            platform : "web"
+        }
+        var jsonFmt = {
+            name : "UserAuth",
+            data : JSON.stringify(userAuth)
+        }
+        doSend(JSON.stringify(jsonFmt)); 
+    }  
+ 
+    function onClose(evt) { 
+        writeToScreen("DISCONNECTED"); 
+    }  
+ 
+    function onMessage(evt) { 
+        var reader = new FileReader();
+        reader.onload = function(){
+            var msg = reader.result;//Bytes2Str(reader.result)
+            writeToScreen('<span style="color: blue;">RESPONSE: '+ msg +'</span>'); 
+            websocket.close(); 
+        };
+        reader.readAsText(evt.data);
+    }  
+ 
+    function onError(evt) { 
+        writeToScreen('<span style="color: red;">ERROR:</span> '+ evt.data); 
+    }  
+ 
+    function doSend(message) { 
+        writeToScreen("SENT: " + message);  
+        websocket.send(message); 
+    }  
+ 
+    function writeToScreen(message) { 
+        var pre = document.createElement("p"); 
+        pre.style.wordWrap = "break-word"; 
+        pre.innerHTML = message; 
+        output.appendChild(pre); 
+    }  
+ 
+    window.addEventListener("load", init, false);  
+</script>  
+<h2>WebSocket Test</h2>  
+<div id="output"></div>  
+</html>
