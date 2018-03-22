@@ -27,7 +27,7 @@ func (Self *pbCodec) Decode(data []byte) (msgObj interface{}, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return msgObj,nil
+	return msgObj, nil
 }
 
 func init() {

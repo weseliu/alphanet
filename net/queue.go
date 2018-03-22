@@ -11,8 +11,8 @@ type EventQueue interface {
 }
 
 type eventQueue struct {
-	queue chan func()
-	exitSignal chan int
+	queue        chan func()
+	exitSignal   chan int
 	capturePanic bool
 }
 

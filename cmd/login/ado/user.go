@@ -1,9 +1,12 @@
 package ado
 
-import "github.com/weseliu/alphanet/db"
+import (
+	"github.com/weseliu/alphanet/db"
+	"log"
+)
 
 type UserModel struct {
-	Id       int64
+	Id       int64 `table:"user"`
 	Name     string
 	Password string
 	Agg      int
@@ -22,10 +25,10 @@ func (Self *UserModel) GetUser(id int64) *UserModel {
 	return nil
 }
 
-func (Self *UserModel) AddUser(user *UserModel) {
-
-}
-
-func init() {
-	db.Instance().RegisterModel(&UserModel{})
+func (Self *UserModel) AddUser(user *UserModel) (id int64) {
+	id, err := db.Instance().Insert(user)
+	if err != nil {
+		log.Println(err)
+	}
+	return
 }

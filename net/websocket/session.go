@@ -7,17 +7,17 @@ import (
 
 type wsSession struct {
 	*net.SessionBase
-	conn *websocket.Conn
+	conn    *websocket.Conn
 	OnClose func()
 }
 
-func (Self *wsSession) Send(data interface{}){
+func (Self *wsSession) Send(data interface{}) {
 	go func() {
 		Self.conn.WriteMessage(websocket.BinaryMessage, data.([]byte))
 	}()
 }
 
-func (Self *wsSession) Close(){
+func (Self *wsSession) Close() {
 	if Self.OnClose != nil {
 		Self.OnClose()
 	}
@@ -50,7 +50,7 @@ func (Self *wsSession) receiveThread() {
 		}
 		Self.Peer().OnEvent(event)
 
-		if result == net.EventResultRequestClose || result == net.EventResultSocketError{
+		if result == net.EventResultRequestClose || result == net.EventResultSocketError {
 			Self.Close()
 			break
 		}
@@ -63,11 +63,9 @@ func (Self *wsSession) run() {
 
 func NewSession(c *websocket.Conn, p net.Peer) *wsSession {
 	session := &wsSession{
-		SessionBase : &net.SessionBase{
-		},
-		conn: c,
+		SessionBase: &net.SessionBase{},
+		conn:        c,
 	}
 	session.SetPeer(p)
 	return session
 }
-

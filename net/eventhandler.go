@@ -10,7 +10,7 @@ type EventHandlerImplement struct {
 }
 
 func (Self *EventHandlerImplement) RegisterEventHandler(event EventType, callback func(*Event)) {
-	if Self.eventHandlerMap == nil{
+	if Self.eventHandlerMap == nil {
 		Self.eventHandlerMap = make(map[EventType][]func(*Event))
 	}
 	if v, ok := Self.eventHandlerMap[event]; ok {
@@ -21,13 +21,13 @@ func (Self *EventHandlerImplement) RegisterEventHandler(event EventType, callbac
 	}
 }
 
-func (Self *EventHandlerImplement) FireEvent(event *Event)  {
+func (Self *EventHandlerImplement) FireEvent(event *Event) {
 	if Self.eventHandlerMap == nil {
 		return
 	}
 
 	if v, ok := Self.eventHandlerMap[event.Type]; ok {
-		for i := 0; i < len(v); i++{
+		for i := 0; i < len(v); i++ {
 			v[i](event)
 		}
 	}

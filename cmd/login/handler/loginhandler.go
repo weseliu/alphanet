@@ -1,35 +1,35 @@
 package handler
 
 import (
-	"github.com/weseliu/alphanet/net"
-	"github.com/weseliu/alphanet/core"
-	"reflect"
+	"fmt"
+	"github.com/weseliu/alphanet/cmd/login/ado"
 	"github.com/weseliu/alphanet/cmd/login/protocal"
 	"github.com/weseliu/alphanet/codec"
-	"github.com/weseliu/alphanet/cmd/login/ado"
+	"github.com/weseliu/alphanet/core"
+	"github.com/weseliu/alphanet/net"
+	"reflect"
 )
 
 type LoginHandler struct {
-
 }
 
-func (Self *LoginHandler)Start() {
+func (Self *LoginHandler) Start() {
 	core.MsgCenter().RegisterMsgHandler(reflect.TypeOf((*protocal.UserAuth)(nil)), Self)
 }
 
-func (Self *LoginHandler)OnMessage(session net.Session, msg interface{}) {
+func (Self *LoginHandler) OnMessage(session net.Session, msg interface{}) {
 	if msg.(*protocal.UserAuth) != nil {
 		Self.onUserAuth(session, msg)
 	}
 }
 
-func (Self *LoginHandler)onUserAuth(session net.Session, msg interface{})  {
+func (Self *LoginHandler) onUserAuth(session net.Session, msg interface{}) {
 	var userAuth = msg.(*protocal.UserAuth)
 
 	var authResult = &protocal.AuthResult{
-		Ret : 0,
-		Msg : "",
-		Token : userAuth.Name + " : " + userAuth.Password,
+		Ret:   0,
+		Msg:   "",
+		Token: userAuth.Name + " : " + userAuth.Password,
 	}
 
 	var user = ado.User().GetUser(userAuth.Id)
@@ -41,6 +41,14 @@ func (Self *LoginHandler)onUserAuth(session net.Session, msg interface{})  {
 	} else {
 		authResult.Ret = 0
 		authResult.Msg = "user is not exist!"
+
+		userId := ado.User().AddUser(&ado.UserModel{
+			Name:     userAuth.Name,
+			Password: userAuth.Password,
+			Agg:      10,
+			Address:  userAuth.DeviceId,
+		})
+		authResult.Msg = fmt.Sprintf("register user success, id : %d", userId)
 	}
 
 	data, err := codec.CodecManager().Encode("json", authResult)

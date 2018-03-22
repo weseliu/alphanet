@@ -1,13 +1,14 @@
 package net
 
 import (
-	"sync/atomic"
 	"fmt"
+	"sync/atomic"
 )
 
 type EventType int32
+
 const (
-	EventNone          EventType = iota
+	EventNone EventType = iota
 	EventConnected
 	EventConnectFailed
 	EventAccepted
@@ -40,8 +41,9 @@ func (Self EventType) String() string {
 }
 
 type EventResult int32
+
 const (
-	EventResultOK            EventResult = iota
+	EventResultOK EventResult = iota
 	EventResultSocketError
 	EventResultSocketTimeout
 	EventResultPackageCrack
@@ -60,17 +62,18 @@ type Event struct {
 
 func (Self *Event) Clone() *Event {
 	c := &Event{
-		UID:        Self.UID,
-		Type:       Self.Type,
-		Tag:        Self.Tag,
-		Session:    Self.Session,
-		Data:       make([]byte, len(Self.Data)),
+		UID:     Self.UID,
+		Type:    Self.Type,
+		Tag:     Self.Tag,
+		Session: Self.Session,
+		Data:    make([]byte, len(Self.Data)),
 	}
 	copy(c.Data, Self.Data)
 	return c
 }
 
 var eventUid int64
+
 func genEventUID() int64 {
 	atomic.AddInt64(&eventUid, 1)
 	return eventUid
@@ -78,9 +81,9 @@ func genEventUID() int64 {
 
 func NewEvent(t EventType, s Session) *Event {
 	self := &Event{
-		Type: t,
-		Session:  s,
-		UID : genEventUID(),
+		Type:    t,
+		Session: s,
+		UID:     genEventUID(),
 	}
 	return self
 }

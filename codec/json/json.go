@@ -7,8 +7,8 @@ import (
 )
 
 type jsonCodec struct {
-	MsgName  string `json:"name"`
-	MsgData  string `json:"data"`
+	MsgName string `json:"name"`
+	MsgData string `json:"data"`
 }
 
 func (Self *jsonCodec) Name() string {

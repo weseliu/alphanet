@@ -15,39 +15,37 @@ type Session interface {
 }
 
 type SessionBase struct {
-	id int64
+	id   int64
 	peer Peer
-	tag interface{}
+	tag  interface{}
 }
 
-func (Self *SessionBase) SetID(id int64){
+func (Self *SessionBase) SetID(id int64) {
 	Self.id = id
 }
 
-func (Self *SessionBase) ID() int64{
+func (Self *SessionBase) ID() int64 {
 	return Self.id
 }
 
-func (Self *SessionBase) SetPeer(peer Peer){
+func (Self *SessionBase) SetPeer(peer Peer) {
 	Self.peer = peer
 }
 
-func (Self *SessionBase) Peer() Peer{
+func (Self *SessionBase) Peer() Peer {
 	return Self.peer
 }
 
-func (Self *SessionBase) SetTag(tag interface{}){
+func (Self *SessionBase) SetTag(tag interface{}) {
 	Self.tag = tag
 }
 
-func (Self *SessionBase) Tag() interface{}{
+func (Self *SessionBase) Tag() interface{} {
 	return Self.tag
 }
 
-func (Self *SessionBase) Send(data interface{}){
+func (Self *SessionBase) Send(data interface{}) {
 }
 
-func (Self *SessionBase) Close(){
+func (Self *SessionBase) Close() {
 }
-
-

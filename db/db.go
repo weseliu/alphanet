@@ -2,54 +2,45 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"reflect"
 	"log"
+	"reflect"
+	"strings"
 )
 
 type Connector struct {
 	conn *sql.DB
-	dsn string
-	models map[string] reflect.Type
+	dsn  string
 }
 
 var defaultConnector *Connector = nil
+
 func Instance() *Connector {
-	if defaultConnector == nil{
-		defaultConnector = &Connector{
-			models : make(map[string] reflect.Type),
-		}
+	if defaultConnector == nil {
+		defaultConnector = &Connector{}
 	}
 	return defaultConnector
 }
 
-func (Self *Connector)Open(dsn string)  {
-	if Self.conn == nil{
+func (Self *Connector) Open(dsn string) {
+	if Self.conn == nil {
 		var err error = nil
 		Self.conn, err = sql.Open("mysql", dsn)
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 		Self.dsn = dsn
 	}
 }
 
-func (Self *Connector)Close()  {
-	if Self.conn != nil{
+func (Self *Connector) Close() {
+	if Self.conn != nil {
 		Self.conn.Close()
 	}
 }
 
-func (Self *Connector)RegisterModel(model interface{})  {
-	t := reflect.TypeOf(model)
-	if t.Kind() == reflect.Ptr{
-		t = t.Elem()
-	}
-	tableName := t.Name()
-	Self.models[tableName] = t
-}
-
-func (Self *Connector)Query(model interface{}, query string, args ...interface{}) interface{} {
+func (Self *Connector) Query(model interface{}, query string, args ...interface{}) interface{} {
 	value := reflect.ValueOf(model)
 	if value.Kind() != reflect.Ptr {
 		log.Println("need ptr model interface !")
@@ -83,7 +74,15 @@ func (Self *Connector)Query(model interface{}, query string, args ...interface{}
 	return nil
 }
 
-func (Self *Connector)QueryAll(model interface{}, query string, args ...interface{}) []interface{} {
+func (Self *Connector) QueryAll(model interface{}, query string, args ...interface{}) []interface{} {
+	value := reflect.ValueOf(model)
+	if value.Kind() != reflect.Ptr {
+		log.Println("need ptr model interface !")
+		return nil
+	} else {
+		value = value.Elem()
+	}
+
 	rows, err := Self.conn.Query(query, args...)
 	defer rows.Close()
 
@@ -108,4 +107,52 @@ func (Self *Connector)QueryAll(model interface{}, query string, args ...interfac
 	return result
 }
 
+func (Self *Connector) GetTableName(model interface{}) (tableName string) {
+	typ := reflect.TypeOf(model)
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	tableName = typ.Name()
+	for i := 0; i < typ.NumField(); i++ {
+		var tag = typ.Field(i).Tag.Get("table")
+		if len(tag) > 0 {
+			tableName = tag
+			break
+		}
+	}
+	return
+}
 
+func (Self *Connector) Insert(model interface{}) (insetId int64, err error) {
+	value := reflect.ValueOf(model)
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	}
+
+	typ := value.Type()
+	length := value.NumField()
+	data := make([]interface{}, length)
+	names := make([]string, length)
+	flags := make([]string, length)
+
+	for i := 0; i < length; i++ {
+		data[i] = value.Field(i).Addr().Interface()
+		names[i] = typ.Field(i).Name
+		flags[i] = "?"
+	}
+
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", Self.GetTableName(model), strings.Join(names, ","), strings.Join(flags, ","))
+
+	stmt, err := Self.conn.Prepare(query)
+	if err != nil {
+		return
+	}
+
+	res, err := stmt.Exec(data...)
+	if err != nil {
+		return
+	}
+
+	insetId, err = res.LastInsertId()
+	return
+}

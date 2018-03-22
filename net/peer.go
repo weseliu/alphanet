@@ -78,16 +78,16 @@ func (Self *PeerBase) Queue() EventQueue {
 	return Self.EventQueue
 }
 
-func (Self *PeerBase) Start(address string) Peer{
+func (Self *PeerBase) Start(address string) Peer {
 	return nil
 }
 
-func (Self *PeerBase) Stop(){
+func (Self *PeerBase) Stop() {
 
 }
 
 func (Self *PeerBase) OnEvent(event *Event) {
-	Self.EventQueue.Post(func(){
+	Self.EventQueue.Post(func() {
 		Self.FireEvent(event)
 	})
 }

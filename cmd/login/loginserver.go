@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/weseliu/alphanet/cmd/login/handler"
+	"github.com/weseliu/alphanet/codec"
+	"github.com/weseliu/alphanet/core"
+	"github.com/weseliu/alphanet/db"
 	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/net/websocket"
 	"log"
-	"github.com/weseliu/alphanet/codec"
-	"github.com/weseliu/alphanet/db"
-	"github.com/weseliu/alphanet/core"
-	"github.com/weseliu/alphanet/cmd/login/handler"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 		return websocket.NewAcceptor(queue)
 	})
 
-	peer.RegisterEventHandler(net.EventReceive, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventReceive, func(event *net.Event) {
 		log.Print("EventReceive : ", string(event.Data))
 		msg, err := codec.CodecManager().Decode("json", event.Data)
 		if err == nil {
@@ -30,11 +30,11 @@ func main() {
 		}
 	})
 
-	peer.RegisterEventHandler(net.EventConnected, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventConnected, func(event *net.Event) {
 		log.Print("EventConnected !")
 	})
 
-	peer.RegisterEventHandler(net.EventClosed, func(event *net.Event){
+	peer.RegisterEventHandler(net.EventClosed, func(event *net.Event) {
 		log.Print("EventClosed !")
 	})
 
@@ -44,4 +44,3 @@ func main() {
 	peer.Stop()
 	db.Instance().Close()
 }
-

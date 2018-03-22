@@ -15,7 +15,7 @@ type SessionManager interface {
 }
 
 type sessionManager struct {
-	sessionMap map[int64]Session
+	sessionMap      map[int64]Session
 	sessionIDAcc    int64
 	sessionMapGuard sync.RWMutex
 }

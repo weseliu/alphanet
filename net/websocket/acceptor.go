@@ -1,11 +1,11 @@
 package websocket
 
 import (
-	"github.com/weseliu/alphanet/net"
 	"github.com/gorilla/websocket"
+	"github.com/weseliu/alphanet/net"
 
-	"net/http"
 	"log"
+	"net/http"
 	"net/url"
 )
 
@@ -69,11 +69,10 @@ func (Self *wsAcceptor) Stop() {
 
 func NewAcceptor(q net.EventQueue) net.Peer {
 	self := &wsAcceptor{
-		PeerBase : &net.PeerBase{
-			EventQueue : q,
-			SessionManager : net.NewSessionManager(),
-			EventHandler : &net.EventHandlerImplement{
-			},
+		PeerBase: &net.PeerBase{
+			EventQueue:     q,
+			SessionManager: net.NewSessionManager(),
+			EventHandler:   &net.EventHandlerImplement{},
 		},
 	}
 
