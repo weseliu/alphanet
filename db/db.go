@@ -17,6 +17,7 @@ var defaultConnector *Connector = nil
 func Instance() *Connector {
 	if defaultConnector == nil{
 		defaultConnector = &Connector{
+			models : make(map[string] reflect.Type),
 		}
 	}
 	return defaultConnector
@@ -48,16 +49,25 @@ func (Self *Connector)RegisterModel(model interface{})  {
 	Self.models[tableName] = t
 }
 
-func (Self *Connector)Query(table interface{}, query string, args ...interface{}) interface{} {
+func (Self *Connector)Query(model interface{}, query string, args ...interface{}) interface{} {
+	value := reflect.ValueOf(model)
+	if value.Kind() != reflect.Ptr {
+		log.Println("need ptr model interface !")
+		return nil
+	} else {
+		value = value.Elem()
+	}
+
 	rows, err := Self.conn.Query(query, args...)
-	defer rows.Close()
 
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	s := reflect.ValueOf(table).Elem()
+	defer rows.Close()
+
+	s := value
 	length := s.NumField()
 	scanner := make([]interface{}, length)
 	for i := 0; i < length; i++ {
@@ -68,12 +78,12 @@ func (Self *Connector)Query(table interface{}, query string, args ...interface{}
 		if err != nil {
 			panic(err)
 		}
-		return table
+		return model
 	}
 	return nil
 }
 
-func (Self *Connector)QueryAll(table interface{}, query string, args ...interface{}) []interface{} {
+func (Self *Connector)QueryAll(model interface{}, query string, args ...interface{}) []interface{} {
 	rows, err := Self.conn.Query(query, args...)
 	defer rows.Close()
 
@@ -82,7 +92,7 @@ func (Self *Connector)QueryAll(table interface{}, query string, args ...interfac
 	}
 
 	result := make([]interface{}, 0)
-	s := reflect.ValueOf(table).Elem()
+	s := reflect.ValueOf(model).Elem()
 	length := s.NumField()
 	scanner := make([]interface{}, length)
 	for i := 0; i < length; i++ {
