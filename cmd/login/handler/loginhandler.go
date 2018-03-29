@@ -45,7 +45,7 @@ func (Self *LoginHandler) onUserAuth(session net.Session, msg interface{}) {
 		userId := ado.User().AddUser(&ado.UserModel{
 			Name:     userAuth.Name,
 			Password: userAuth.Password,
-			Agg:      10,
+			Age:      10,
 			Address:  userAuth.DeviceId,
 		})
 		authResult.Msg = fmt.Sprintf("register user success, id : %d", userId)

@@ -9,7 +9,7 @@ type UserModel struct {
 	Id       int64 `table:"user"`
 	Name     string
 	Password string
-	Agg      int
+	Age      int
 	Address  string
 }
 
