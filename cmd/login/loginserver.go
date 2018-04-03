@@ -2,6 +2,9 @@ package main
 
 import (
 	"github.com/weseliu/alphanet/cmd/login/handler"
+	_ "github.com/weseliu/alphanet/cmd/protocal/connect"
+	_ "github.com/weseliu/alphanet/codec/json"
+	_ "github.com/weseliu/alphanet/codec/pb"
 	"github.com/weseliu/alphanet/codec"
 	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/db"
@@ -11,6 +14,8 @@ import (
 )
 
 func main() {
+	codec.RegisterPbMessageMeta()
+
 	db.Instance().Open("root:@tcp(localhost:3306)/alphanet?charset=utf8")
 
 	var logHandler handler.LoginHandler

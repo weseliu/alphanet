@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"github.com/golang/protobuf/proto"
 )
 
 type MessageMeta struct {
@@ -87,4 +88,11 @@ func BuildMessage(name string) interface{} {
 		return reflect.New(meta.Type).Interface()
 	}
 	return nil
+}
+
+func RegisterPbMessageMeta()  {
+	var protoTypes = proto.ProtoTypes()
+	for _, typ := range protoTypes {
+		RegisterMessageMeta("pb", reflect.New(typ.Elem()).Interface())
+	}
 }
