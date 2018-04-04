@@ -26,7 +26,7 @@ func (Self *jsonCodec) Encode(msgObj interface{}) (data []byte, err error) {
 	return json.Marshal(Self)
 }
 
-func (Self *jsonCodec) Decode(data []byte) (msgObj interface{}, err error) {
+func (Self *jsonCodec) Decode(data []byte, msg interface{}) (msgObj interface{}, err error) {
 	err = json.Unmarshal(data, Self)
 	if err != nil {
 		return nil, err

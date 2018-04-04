@@ -11,6 +11,7 @@ import (
 	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/net/websocket"
 	"log"
+	"github.com/weseliu/alphanet/cmd/protocal/connect"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 
 	peer.RegisterEventHandler(net.EventReceive, func(event *net.Event) {
 		log.Print("EventReceive : ", string(event.Data))
-		msg, err := codec.CodecManager().Decode("json", event.Data)
+		msg, err := codec.CodecManager().Decode("pb", event.Data, connect.CMD_BASE_CS{})
 		if err == nil {
 			core.MsgCenter().DispatchMessage(event.Session, msg)
 		} else {

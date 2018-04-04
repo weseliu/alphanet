@@ -8,7 +8,7 @@ import (
 type Codec interface {
 	Name() string
 	Encode(msg interface{}) ([]byte, error)
-	Decode(data []byte) (interface{}, error)
+	Decode(data []byte, msg interface{}) (interface{}, error)
 }
 
 type codecManager struct {
@@ -44,9 +44,9 @@ func (Self *codecManager) Encode(codecName string, msg interface{}) ([]byte, err
 	return nil, errors.New("encode codec not exist")
 }
 
-func (Self *codecManager) Decode(codecName string, data []byte) (interface{}, error) {
+func (Self *codecManager) Decode(codecName string, data []byte, msg interface{}) (interface{}, error) {
 	if Self.codecMap[codecName] != nil {
-		return Self.codecMap[codecName].Decode(data)
+		return Self.codecMap[codecName].Decode(data, msg)
 	}
 	return nil, errors.New("decode codec not exist")
 }
