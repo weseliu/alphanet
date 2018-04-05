@@ -8,17 +8,18 @@ import (
 	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/net"
 	"reflect"
+	"github.com/weseliu/alphanet/cmd/protocal/connect"
 )
 
 type LoginHandler struct {
 }
 
 func (Self *LoginHandler) Start() {
-	core.MsgCenter().RegisterMsgHandler(reflect.TypeOf((*protocal.UserAuth)(nil)), Self)
+	core.MsgCenter().RegisterMsgHandler(reflect.TypeOf((*connect.CMD_AUTH_CS)(nil)), Self)
 }
 
 func (Self *LoginHandler) OnMessage(session net.Session, msg interface{}) {
-	if msg.(*protocal.UserAuth) != nil {
+	if msg.(*connect.CMD_AUTH_CS) != nil {
 		Self.onUserAuth(session, msg)
 	}
 }

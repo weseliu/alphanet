@@ -2,16 +2,12 @@ package main
 
 import (
 	"github.com/weseliu/alphanet/cmd/login/handler"
-	_ "github.com/weseliu/alphanet/cmd/protocal/connect"
 	_ "github.com/weseliu/alphanet/codec/json"
 	_ "github.com/weseliu/alphanet/codec/pb"
 	"github.com/weseliu/alphanet/codec"
-	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/db"
 	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/net/websocket"
-	"log"
-	"github.com/weseliu/alphanet/cmd/protocal/connect"
 )
 
 func main() {
@@ -26,23 +22,26 @@ func main() {
 		return websocket.NewAcceptor(queue)
 	})
 
-	peer.RegisterEventHandler(net.EventReceive, func(event *net.Event) {
-		log.Print("EventReceive : ", string(event.Data))
-		msg, err := codec.CodecManager().Decode("pb", event.Data, connect.CMD_BASE_CS{})
-		if err == nil {
-			core.MsgCenter().DispatchMessage(event.Session, msg)
-		} else {
-			log.Fatal(err)
-		}
-	})
-
-	peer.RegisterEventHandler(net.EventConnected, func(event *net.Event) {
-		log.Print("EventConnected !")
-	})
-
-	peer.RegisterEventHandler(net.EventClosed, func(event *net.Event) {
-		log.Print("EventClosed !")
-	})
+	var eventHandler handler.EventHandler
+	eventHandler.Start(peer)
+	//
+	//peer.RegisterEventHandler(net.EventReceive, func(event *net.Event) {
+	//	log.Print("EventReceive : ", string(event.Data))
+	//	msg, err := codec.CodecManager().Decode("pb", event.Data, &connect.CSPACK{})
+	//	if err == nil {
+	//		core.MsgCenter().DispatchMessage(event.Session, msg)
+	//	} else {
+	//		log.Fatal(err)
+	//	}
+	//})
+	//
+	//peer.RegisterEventHandler(net.EventConnected, func(event *net.Event) {
+	//	log.Print("EventConnected !")
+	//})
+	//
+	//peer.RegisterEventHandler(net.EventClosed, func(event *net.Event) {
+	//	log.Print("EventClosed !")
+	//})
 
 	peer.Start("http://127.0.0.1:8801/login")
 	queue.StartLoop()
