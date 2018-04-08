@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/weseliu/alphanet/cmd/login/handler"
+	"github.com/weseliu/alphanet/cmd/connect/handler"
 	_ "github.com/weseliu/alphanet/codec/json"
 	_ "github.com/weseliu/alphanet/codec/pb"
 	"github.com/weseliu/alphanet/codec"

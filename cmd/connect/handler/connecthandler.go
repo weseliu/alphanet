@@ -5,7 +5,7 @@ import (
 	"github.com/weseliu/alphanet/net"
 	"reflect"
 	"github.com/weseliu/alphanet/cmd/protocal/connect"
-	"github.com/weseliu/alphanet/cmd/login/encoder"
+	"github.com/weseliu/alphanet/cmd/connect/encoder"
 )
 
 type LoginHandler struct {
