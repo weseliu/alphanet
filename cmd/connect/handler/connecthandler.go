@@ -4,7 +4,7 @@ import (
 	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/net"
 	"reflect"
-	"github.com/weseliu/alphanet/cmd/protocal/connect"
+	"github.com/weseliu/alphanet/cmd/global/protocal/connect"
 	"github.com/weseliu/alphanet/cmd/connect/encoder"
 )
 

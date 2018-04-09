@@ -2,10 +2,10 @@ package encoder
 
 import (
 	"github.com/weseliu/alphanet/codec"
-	"github.com/weseliu/alphanet/cmd/protocal/connect"
+	"github.com/weseliu/alphanet/cmd/global/protocal/connect"
 	"reflect"
 	"strings"
-	"github.com/weseliu/alphanet/cmd/protocal/game"
+	"github.com/weseliu/alphanet/cmd/global/protocal/game"
 )
 
 var scPack connect.SCPACK

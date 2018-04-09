@@ -4,7 +4,7 @@ import (
 	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/net"
 	"log"
-	"github.com/weseliu/alphanet/cmd/login/encoder"
+	"github.com/weseliu/alphanet/cmd/connect/encoder"
 )
 
 type EventHandler struct {

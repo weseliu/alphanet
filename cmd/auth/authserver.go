@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/weseliu/alphanet/cmd/ado"
+	"github.com/weseliu/alphanet/cmd/global/ado"
 	"github.com/weseliu/alphanet/db"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"github.com/weseliu/alphanet/util"
+	"strconv"
+	"time"
+	"github.com/weseliu/alphanet/cmd/global/interfaces"
 )
 
 type authRequest struct {
@@ -26,10 +28,40 @@ type authResponse struct {
 	ServerUrl     string `json:"server_url"`
 }
 
-func sendAuthResult(w http.ResponseWriter, code string, msg string, token string) {
+type AuthResult int
+
+const (
+	AuthResultSuccess AuthResult = iota
+	AuthResultParamsError
+	AuthResultRegisterFail
+	AuthResultAccountError
+	AuthResultTokenError
+)
+
+func (Self AuthResult) String() string {
+	return strconv.Itoa((int)(Self))
+}
+
+func (Self AuthResult) Description() string {
+	switch Self {
+	case AuthResultSuccess:
+		return "AuthResultSuccess"
+	case AuthResultParamsError:
+		return "AuthResultParamsError"
+	case AuthResultRegisterFail:
+		return "AuthResultRegisterFail"
+	case AuthResultAccountError:
+		return "AuthResultAccountError"
+	case AuthResultTokenError:
+		return "AuthResultTokenError"
+	}
+	return "Error"
+}
+
+func sendAuthResult(w http.ResponseWriter, code AuthResult, token string) {
 	var rsp = authResponse{
-		RetCode:       code,
-		RetMsg:        msg,
+		RetCode:       code.String(),
+		RetMsg:        code.Description(),
 		IdentityToken: token,
 		ServerUrl:     "ws://127.0.0.1:8801/login",
 	}
@@ -53,8 +85,8 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 
 	authReq := &authRequest{}
 	err := json.Unmarshal(body, authReq)
-	if err != nil || len(authReq.Acc) == 0 || len(authReq.UserChannel) == 0{
-		sendAuthResult(w, "-1", "params format error!", "")
+	if err != nil || len(authReq.Acc) == 0 || len(authReq.UserChannel) == 0 {
+		sendAuthResult(w, AuthResultParamsError, "")
 		return
 	}
 
@@ -66,13 +98,29 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 			Password: authReq.Pwd,
 		}
 
-		if success := ado.Register().AddUser(regInfo); success != true{
-			sendAuthResult(w, "-2", "register user fail!", "")
+		if success := ado.Register().AddUser(regInfo); success != true {
+			sendAuthResult(w, AuthResultRegisterFail, "")
 			return
 		}
 	}
 
-	sendAuthResult(w, "0", "", util.Md5(regInfo.Account + regInfo.Channel))
+	if regInfo.Password != authReq.Pwd {
+		sendAuthResult(w, AuthResultAccountError, "")
+		return
+	}
+
+	token := &interfaces.IdentityToken{
+		Account:regInfo.Account,
+		Channel:regInfo.Channel,
+		Time:time.Now(),
+	}
+
+	identityToken, err := token.Encrypt()
+	if err != nil {
+		sendAuthResult(w, AuthResultTokenError, "")
+		return
+	}
+	sendAuthResult(w, AuthResultSuccess, identityToken)
 }
 
 func main() {
