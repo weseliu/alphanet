@@ -24,7 +24,7 @@ func main() {
 	var eventHandler handler.EventHandler
 	eventHandler.Start(peer)
 
-	peer.Start("http://127.0.0.1:8801/login")
+	peer.Start("http://127.0.0.1:8801/connect")
 	queue.StartLoop()
 	queue.Wait()
 	peer.Stop()

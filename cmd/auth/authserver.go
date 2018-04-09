@@ -63,7 +63,7 @@ func sendAuthResult(w http.ResponseWriter, code AuthResult, token string) {
 		RetCode:       code.String(),
 		RetMsg:        code.Description(),
 		IdentityToken: token,
-		ServerUrl:     "ws://127.0.0.1:8801/login",
+		ServerUrl:     "ws://127.0.0.1:8801/connect",
 	}
 
 	data, err := json.Marshal(rsp)
