@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 	"github.com/weseliu/alphanet/cmd/global/interfaces"
+	"github.com/weseliu/alphanet/util"
 )
 
 type authRequest struct {
@@ -63,7 +64,7 @@ func sendAuthResult(w http.ResponseWriter, code AuthResult, token string) {
 		RetCode:       code.String(),
 		RetMsg:        code.Description(),
 		IdentityToken: token,
-		ServerUrl:     "ws://127.0.0.1:8801/connect",
+		ServerUrl:     util.GetJsonValue("auth.json", "connect_server").String(),
 	}
 
 	data, err := json.Marshal(rsp)
@@ -124,10 +125,10 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	db.Instance().Open("root:@tcp(localhost:3306)/alphanet?charset=utf8")
+	db.Instance().Open(util.GetJsonValue("auth.json", "dsn").String())
 
 	http.HandleFunc("/auth", authServer)
-	err := http.ListenAndServe(":12345", nil)
+	err := http.ListenAndServe(util.GetJsonValue("auth.json", "port").String(), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
