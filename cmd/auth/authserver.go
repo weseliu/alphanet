@@ -59,12 +59,14 @@ func (Self AuthResult) Description() string {
 	return "Error"
 }
 
+var config util.Config
+
 func sendAuthResult(w http.ResponseWriter, code AuthResult, token string) {
 	var rsp = authResponse{
 		RetCode:       code.String(),
 		RetMsg:        code.Description(),
 		IdentityToken: token,
-		ServerUrl:     util.GetJsonValue("auth.json", "connect_server").String(),
+		ServerUrl:     config.String("connect_server"),
 	}
 
 	data, err := json.Marshal(rsp)
@@ -125,10 +127,11 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	db.Instance().Open(util.GetJsonValue("auth.json", "dsn").String())
+	config = util.Configs("./conf/auth.json")
+	db.Instance().Open(config.String("dsn"))
 
 	http.HandleFunc("/auth", authServer)
-	err := http.ListenAndServe(util.GetJsonValue("auth.json", "port").String(), nil)
+	err := http.ListenAndServe(config.String("port"), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
