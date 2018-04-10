@@ -8,12 +8,14 @@ import (
 	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/net/websocket"
 	_ "github.com/weseliu/alphanet/codec/pb"
+	"github.com/weseliu/alphanet/util"
 )
 
 func main() {
 	codec.RegisterPbMessageMeta()
+	config := util.Configs("./conf/connect.json")
 
-	db.Instance().Open("root:@tcp(localhost:3306)/alphanet?charset=utf8")
+	db.Instance().Open(config.String("dsn"))
 	var logHandler handler.LoginHandler
 	logHandler.Start()
 	queue := net.NewEventQueue()
@@ -24,7 +26,7 @@ func main() {
 	var eventHandler handler.EventHandler
 	eventHandler.Start(peer)
 
-	peer.Start("http://127.0.0.1:8801/connect")
+	peer.Start(config.String("url"))
 	queue.StartLoop()
 	queue.Wait()
 	peer.Stop()
