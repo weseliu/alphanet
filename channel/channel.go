@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"github.com/pkg/errors"
 )
 
 type PackageHead struct {
@@ -18,6 +19,17 @@ type PackageHead struct {
 type Package struct {
 	*PackageHead
 	Data []byte
+}
+
+func NewPackage(seq int32, msg []byte) *Package {
+	return &Package{
+		PackageHead: &PackageHead{
+			Size: int32(len(msg)),
+			Seq:  seq,
+			Flag: 0,
+		},
+		Data: msg,
+	}
 }
 
 func (Self *Package) Encode() []byte {
@@ -61,6 +73,7 @@ type Channel struct {
 	timeout    time.Duration
 	inputChan  chan *Package
 	outputChan chan []byte
+	seq		int32
 }
 
 func (Self *Channel) Listener() (err error) {
@@ -82,25 +95,38 @@ func (Self *Channel) Connect() (err error) {
 	return
 }
 
-func (Self *Channel) Send(msg []byte) {
-	pkg := &Package{
-		PackageHead: &PackageHead{
-			Size: int32(len(msg)),
-			Seq:  0,
-			Flag: 0,
-		},
-		Data: msg,
+func (Self *Channel) Send(msg []byte, callback func(result int)) {
+	go Self.SendSync(msg, callback)
+}
+
+func (Self *Channel)SendSync(msg []byte, callback func(result int)) {
+	Self.seq++
+	pkg := NewPackage(Self.seq, msg)
+
+	select {
+	case Self.outputChan <- pkg.Encode():
+		if callback != nil {
+			callback(0)
+		}
+	case <-time.After(Self.timeout * time.Second):
+		if callback != nil {
+			callback(-1)
+		}
 	}
-	Self.outputChan <- pkg.Encode()
 }
 
 func (Self *Channel) ReadLoop(reader func([]byte)) {
 	for {
-		data, ok := <-Self.inputChan
-		if ok {
-			reader(data.Data)
-		} else {
-			break
+		select {
+		case data, ok := <-Self.inputChan:
+			if ok {
+				reader(data.Data)
+			} else {
+				break
+			}
+		case <-time.After(Self.timeout * time.Second):
+			log.Println("read idle!")
+			continue
 		}
 	}
 }
@@ -123,12 +149,15 @@ func (Self *Channel) accept() {
 func (Self *Channel) handlerRead(conn net.Conn) {
 	scanner := bufio.NewScanner(conn)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF {
+			return 0, nil, errors.New("conn closed!")
+		}
 		if len(data) > 4 {
 			var length int32
 			binary.Read(bytes.NewReader(data[0:4]), binary.LittleEndian, &length)
-			size := int(length + 8)
-			if size <= len(data) {
-				return size + 4, data[:size + 4], nil
+			pkgSize := int(length + 12)
+			if pkgSize <= len(data) {
+				return pkgSize, data[:pkgSize], nil
 			}
 		}
 		return
@@ -145,12 +174,13 @@ func (Self *Channel) handlerRead(conn net.Conn) {
 
 		pkg := &Package{PackageHead : &PackageHead{}}
 		pkg.Decode(scanner.Bytes())
-		select {
+		Self.inputChan <- pkg
+		/*select {
 		case Self.inputChan <- pkg:
 		case <-time.After(Self.timeout * time.Second):
 			log.Println("inputChan timepout!")
 			continue
-		}
+		}*/
 	}
 }
 
