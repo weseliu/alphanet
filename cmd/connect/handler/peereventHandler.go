@@ -5,7 +5,6 @@ import (
 	"github.com/weseliu/alphanet/net"
 	"log"
 	"github.com/weseliu/alphanet/cmd/connect/encoder"
-	"github.com/weseliu/alphanet/cmd/connect/proxy"
 )
 
 type EventHandler struct {
@@ -23,15 +22,12 @@ func (Self *EventHandler) onEventReceive(event *net.Event){
 	if msg != nil {
 		core.MsgCenter().DispatchMessage(event.Session, msg)
 	}
-	proxy.OnPlayerEnter(100)
 }
 
 func (Self *EventHandler) onEventConnected(event *net.Event){
 	log.Print("EventConnected !")
-	proxy.OnPlayerEnter(100)
 }
 
 func (Self *EventHandler) onEventClosed(event *net.Event){
 	log.Print("EventClosed !")
-	proxy.OnPlayerLeave(100)
 }

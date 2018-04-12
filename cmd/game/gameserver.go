@@ -15,7 +15,7 @@ func main() {
 
 	go func() {
 		for {
-			channelClient.Send([]byte("BBBBBBBBBBBBB"))
+			channelClient.Send([]byte("BBBBBBBBBBBBB"), nil)
 		}
 	}()
 
