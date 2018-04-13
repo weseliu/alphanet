@@ -180,7 +180,8 @@ func (Self *Channel) handlerRead(conn net.Conn) {
 		}
 
 		pkg.Decode(scanner.Bytes())
-		if pkg.Seq < Self.remoteSeq || Self.remoteSeq == 0 {
+		if pkg.Seq > Self.remoteSeq || Self.remoteSeq == 0 {
+			Self.remoteSeq = pkg.Seq
 			Self.inputChan <- pkg
 		} else {
 			log.Println("package seq check fail! remote : ", pkg.Seq, ", local : ", Self.remoteSeq)
