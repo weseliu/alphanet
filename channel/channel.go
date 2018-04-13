@@ -8,6 +8,7 @@ import (
 	"net"
 	"time"
 	"github.com/pkg/errors"
+	"unsafe"
 )
 
 type PackageHead struct {
@@ -33,7 +34,7 @@ func NewPackage(seq int32, msg []byte) *Package {
 }
 
 func (Self *Package) Encode() []byte {
-	Self.Size = int32(len(Self.Data))
+	Self.Size = int32(len(Self.Data) + int(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag)))
 
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.LittleEndian, Self.Size)
@@ -53,7 +54,7 @@ func (Self *Package) Decode(data []byte) (err error) {
 		return
 	}
 
-	Self.Data = make([]byte, Self.Size)
+	Self.Data = make([]byte, Self.Size - int32(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag)))
 
 	err = binary.Read(buffer, binary.LittleEndian, &Self.Seq)
 	if err != nil {
@@ -66,6 +67,23 @@ func (Self *Package) Decode(data []byte) (err error) {
 	return binary.Read(buffer, binary.LittleEndian, Self.Data)
 }
 
+func (Self *Package)Split(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF {
+		return 0, nil, errors.New("conn closed!")
+	}
+
+	var sizeLen = int(unsafe.Sizeof(Self.Size))
+	if len(data) > sizeLen {
+		var length int32
+		binary.Read(bytes.NewReader(data[0:sizeLen]), binary.LittleEndian, &length)
+		pkgSize := int(length) + sizeLen
+		if pkgSize <= len(data) {
+			return pkgSize, data[:pkgSize], nil
+		}
+	}
+	return
+}
+
 type Channel struct {
 	listen     net.Listener
 	conn       net.Conn
@@ -74,6 +92,7 @@ type Channel struct {
 	inputChan  chan *Package
 	outputChan chan []byte
 	seq		int32
+	remoteSeq int32
 }
 
 func (Self *Channel) Listener() (err error) {
@@ -147,21 +166,9 @@ func (Self *Channel) accept() {
 }
 
 func (Self *Channel) handlerRead(conn net.Conn) {
+	pkg := &Package{PackageHead : &PackageHead{}}
 	scanner := bufio.NewScanner(conn)
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if atEOF {
-			return 0, nil, errors.New("conn closed!")
-		}
-		if len(data) > 4 {
-			var length int32
-			binary.Read(bytes.NewReader(data[0:4]), binary.LittleEndian, &length)
-			pkgSize := int(length + 12)
-			if pkgSize <= len(data) {
-				return pkgSize, data[:pkgSize], nil
-			}
-		}
-		return
-	})
+	scanner.Split(pkg.Split)
 
 	for {
 		scanner.Scan()
@@ -172,9 +179,12 @@ func (Self *Channel) handlerRead(conn net.Conn) {
 			return
 		}
 
-		pkg := &Package{PackageHead : &PackageHead{}}
 		pkg.Decode(scanner.Bytes())
-		Self.inputChan <- pkg
+		if pkg.Seq < Self.remoteSeq || Self.remoteSeq == 0 {
+			Self.inputChan <- pkg
+		} else {
+			log.Println("package seq check fail! remote : ", pkg.Seq, ", local : ", Self.remoteSeq)
+		}
 		/*select {
 		case Self.inputChan <- pkg:
 		case <-time.After(Self.timeout * time.Second):
