@@ -6,7 +6,8 @@ import (
 )
 
 type RegisterModel struct {
-	Account 	string `table:"register"`
+	Id 			int64 `table:"register"`
+	Account 	string
 	Channel     string
 	Password    string
 }
@@ -23,11 +24,11 @@ func (Self *RegisterModel) GetUser(channel string, account string) *RegisterMode
 	return nil
 }
 
-func (Self *RegisterModel) AddUser(user *RegisterModel) bool {
-	_, err := db.Instance().Insert(user)
+func (Self *RegisterModel) AddUser(user *RegisterModel) int64 {
+	lastId, err := db.Instance().Insert(user)
 	if err != nil {
 		log.Println(err)
-		return false
+		return -1
 	}
-	return true
+	return lastId
 }

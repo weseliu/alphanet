@@ -101,7 +101,7 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 			Password: authReq.Pwd,
 		}
 
-		if success := ado.Register().AddUser(regInfo); success != true {
+		if regInfo.Id = ado.Register().AddUser(regInfo); regInfo.Id > 0 {
 			sendAuthResult(w, AuthResultRegisterFail, "")
 			return
 		}
@@ -113,6 +113,7 @@ func authServer(w http.ResponseWriter, req *http.Request) {
 	}
 
 	token := &interfaces.IdentityToken{
+		Id : regInfo.Id,
 		Account:regInfo.Account,
 		Channel:regInfo.Channel,
 		Time:time.Now(),

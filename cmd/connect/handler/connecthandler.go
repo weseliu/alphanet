@@ -1,33 +1,49 @@
 package handler
 
 import (
-	"github.com/weseliu/alphanet/core"
+	"github.com/weseliu/alphanet/channel"
+	"github.com/weseliu/alphanet/util"
+	"time"
 	"github.com/weseliu/alphanet/net"
-	"reflect"
-	"github.com/weseliu/alphanet/cmd/global/protocal/connect"
-	"github.com/weseliu/alphanet/cmd/connect/encoder"
 )
 
-type LoginHandler struct {
+var proxyChannel *channel.Channel
+var roleSessions map[int64]net.Session
+
+func ChannelStart() {
+	roleSessions = make(map[int64]net.Session)
+
+	config := util.Configs("./conf/connect.json")
+	proxyChannel = channel.NewChannel(config.String("channel_address"),
+		time.Duration(config.Int64("channel_timeout")),
+		int(config.Int64("channel_input_chan_size")),
+		int(config.Int64("channel_output_chan_size")))
+	proxyChannel.Listener()
+
+	go proxyChannel.ReadLoop(fireRemoteMessage)
 }
 
-func (Self *LoginHandler) Start() {
-	core.MsgCenter().RegisterMsgHandler(reflect.TypeOf((*connect.CMD_AUTH_CS)(nil)), Self)
+func OnRoleEnter(roleId int64, session net.Session)  {
+	roleSessions[roleId] = session
+	SendRemoteMessage(roleId, []byte("player enter!"))
 }
 
-func (Self *LoginHandler) OnMessage(session net.Session, msg interface{}) {
-	if msg.(*connect.CMD_AUTH_CS) != nil {
-		Self.onUserAuth(session, msg)
+func OnRoleExit(session net.Session) {
+	for id, v := range roleSessions {
+		if v == session {
+			delete(roleSessions, id)
+		}
 	}
 }
 
-func (Self *LoginHandler) onUserAuth(session net.Session, msg interface{}) {
-	var authReq = msg.(*connect.CMD_AUTH_CS)
-	authRsq := &connect.CMD_AUTH_SC{}
-	authRsq.GameId = authReq.GameId
-	authRsq.RetCode = 0
-	authRsq.SessionId = "12222222222222111111"
-	if data := encoder.EncodeCmd(authRsq); data != nil{
-		session.Send(data)
+func fireRemoteMessage(bytes []byte, param int64) {
+	roleId := param
+	session := roleSessions[roleId]
+	if session != nil {
+		session.Send(bytes)
 	}
+}
+
+func SendRemoteMessage(roleId int64, msg []byte) {
+	proxyChannel.Send(msg, nil, roleId)
 }

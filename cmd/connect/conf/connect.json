@@ -2,4 +2,9 @@
   "url" : "http://127.0.0.1:8801/connect",
   "dsn" : "root:@tcp(localhost:3306)/alphanet?charset=utf8",
   "game_server" : "ws://127.0.0.1:8801/connect"
+  
+  "channel_address" : "127.0.0.1:2011",
+  "channel_timeout" : 10,
+  "channel_input_chan_size" : 1,
+  "channel_output_chan_size" : 1000,
 }

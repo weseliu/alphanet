@@ -15,6 +15,7 @@ type PackageHead struct {
 	Size int32
 	Seq  int32
 	Flag int32
+	Param int64
 }
 
 type Package struct {
@@ -22,24 +23,26 @@ type Package struct {
 	Data []byte
 }
 
-func NewPackage(seq int32, msg []byte) *Package {
+func NewPackage(seq int32, msg []byte, param int64) *Package {
 	return &Package{
 		PackageHead: &PackageHead{
 			Size: int32(len(msg)),
 			Seq:  seq,
 			Flag: 0,
+			Param: param,
 		},
 		Data: msg,
 	}
 }
 
 func (Self *Package) Encode() []byte {
-	Self.Size = int32(len(Self.Data) + int(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag)))
+	Self.Size = int32(len(Self.Data) + int(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag) + unsafe.Sizeof(Self.Param)))
 
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.LittleEndian, Self.Size)
 	binary.Write(buffer, binary.LittleEndian, Self.Seq)
 	binary.Write(buffer, binary.LittleEndian, Self.Flag)
+	binary.Write(buffer, binary.LittleEndian, Self.Param)
 	binary.Write(buffer, binary.LittleEndian, Self.Data)
 
 	return buffer.Bytes()
@@ -54,13 +57,17 @@ func (Self *Package) Decode(data []byte) (err error) {
 		return
 	}
 
-	Self.Data = make([]byte, Self.Size - int32(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag)))
+	Self.Data = make([]byte, Self.Size - int32(unsafe.Sizeof(Self.Seq) + unsafe.Sizeof(Self.Flag) + unsafe.Sizeof(Self.Param)))
 
 	err = binary.Read(buffer, binary.LittleEndian, &Self.Seq)
 	if err != nil {
 		return
 	}
 	err = binary.Read(buffer, binary.LittleEndian, &Self.Flag)
+	if err != nil {
+		return
+	}
+	err = binary.Read(buffer, binary.LittleEndian, &Self.Param)
 	if err != nil {
 		return
 	}
@@ -114,13 +121,13 @@ func (Self *Channel) Connect() (err error) {
 	return
 }
 
-func (Self *Channel) Send(msg []byte, callback func(result int)) {
-	Self.SendSync(msg, callback)
+func (Self *Channel) Send(msg []byte, callback func(result int), param int64) {
+	Self.SendSync(msg, callback, param)
 }
 
-func (Self *Channel)SendSync(msg []byte, callback func(result int)) {
+func (Self *Channel)SendSync(msg []byte, callback func(result int), param int64) {
 	Self.seq++
-	pkg := NewPackage(Self.seq, msg)
+	pkg := NewPackage(Self.seq, msg, param)
 
 	select {
 	case Self.outputChan <- pkg.Encode():
@@ -134,12 +141,12 @@ func (Self *Channel)SendSync(msg []byte, callback func(result int)) {
 	}
 }
 
-func (Self *Channel) ReadLoop(reader func([]byte)) {
+func (Self *Channel) ReadLoop(reader func([]byte, int64)) {
 	for {
 		select {
 		case data, ok := <-Self.inputChan:
 			if ok {
-				reader(data.Data)
+				reader(data.Data, data.Param)
 			} else {
 				break
 			}

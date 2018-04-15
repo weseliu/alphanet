@@ -7,16 +7,12 @@ import (
 	"encoding/base64"
 )
 
-var encryptKey = []byte("Edas@3ad")
-
-type IdentityToken struct {
-	Id int64
-	Account string
-	Channel string
+type SessionId struct {
+	Id 	int64
 	Time    time.Time
 }
 
-func (Self *IdentityToken)Encrypt() (string, error){
+func (Self *SessionId)Encrypt() (string, error){
 	data, err := json.Marshal(Self)
 	if err == nil{
 		bytes, err := util.DesEncrypt(data, encryptKey)
@@ -25,7 +21,7 @@ func (Self *IdentityToken)Encrypt() (string, error){
 	return "", err
 }
 
-func (Self *IdentityToken)Decrypt(base64String string) error {
+func (Self *SessionId)Decrypt(base64String string) error {
 	bytes, err := base64.StdEncoding.DecodeString(base64String)
 	if err == nil {
 		data, err := util.DesDecrypt(bytes, encryptKey)

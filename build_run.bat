@@ -21,6 +21,7 @@ if %errorlevel% == 0 (
 
 xcopy F:\GoProjects\src\github.com\weseliu\alphanet\cmd\auth\conf\*.* F:\GoProjects\bin\conf\  /s /e /y
 xcopy F:\GoProjects\src\github.com\weseliu\alphanet\cmd\connect\conf\*.* F:\GoProjects\bin\conf\  /s /e /y
+xcopy F:\GoProjects\src\github.com\weseliu\alphanet\cmd\game\conf\*.* F:\GoProjects\bin\conf\  /s /e /y
 
 cd F:\GoProjects\bin
 
@@ -49,3 +50,4 @@ goto success
 pause
 
 :success
+pause
