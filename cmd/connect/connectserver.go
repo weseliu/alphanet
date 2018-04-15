@@ -14,7 +14,7 @@ import (
 )
 
 func openGameChanel()  {
-	channelSvr := channel.NewChannel(":2011", 10, 1, 1)
+	channelSvr := channel.NewChannel(":2011", 10, 1, 1000)
 	channelSvr.Listener()
 
 	go channelSvr.ReadLoop(func(bytes []byte) {

@@ -115,7 +115,7 @@ func (Self *Channel) Connect() (err error) {
 }
 
 func (Self *Channel) Send(msg []byte, callback func(result int)) {
-	go Self.SendSync(msg, callback)
+	Self.SendSync(msg, callback)
 }
 
 func (Self *Channel)SendSync(msg []byte, callback func(result int)) {
@@ -181,6 +181,7 @@ func (Self *Channel) handlerRead(conn net.Conn) {
 
 		pkg.Decode(scanner.Bytes())
 		if pkg.Seq > Self.remoteSeq || Self.remoteSeq == 0 {
+			log.Println("package seq, remote : ", pkg.Seq, ", local : ", Self.remoteSeq)
 			Self.remoteSeq = pkg.Seq
 			Self.inputChan <- pkg
 		} else {
