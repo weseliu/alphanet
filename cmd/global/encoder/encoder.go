@@ -45,15 +45,14 @@ func EncodeMsg(code int32, msg interface{}) []byte {
 		scMsg.Body = data
 		data, err := codec.CodecManager().Encode("pb", &scMsg)
 		if err == nil{
-			logicPack.LogicPkg = data
-			return EncodeCmd(&logicPack)
+			return data
 		}
 	}
 
 	return nil
 }
 
-func Decode(data []byte) interface{} {
+func DecodeCmd(data []byte) interface{} {
 	msg, err := codec.CodecManager().Decode("pb", data, &connect.CSPACK{})
 	if err == nil {
 		csPack := msg.(*connect.CSPACK)
@@ -61,19 +60,20 @@ func Decode(data []byte) interface{} {
 		command, err = codec.CodecManager().Decode("pb", csPack.Body, command)
 
 		if err == nil {
-			if csPack.Cmd == (connect.CommandType)(connect.CommandType_value["CMD_LOGIC"]) {
-				csMsg, err := codec.CodecManager().Decode("pb", command.(*connect.CMD_LOGIC_CS).LogicPkg, &game.CSMSG{})
-				if err == nil{
-					csPack := csMsg.(*game.CSMSG)
-					msg := codec.BuildMessage(connect.CommandType_name[(int32)(csPack.Msg)] + "_CS")
-					msg, err = codec.CodecManager().Decode("pb", csPack.Body, msg)
-					if err == nil {
-						return msg
-					}
-				}
-			} else {
-				return command
-			}
+			return command
+		}
+	}
+	return nil
+}
+
+func DecodeMsg(data []byte) interface{} {
+	csMsg, err := codec.CodecManager().Decode("pb", data, &game.CSMSG{})
+	if err == nil{
+		csPack := csMsg.(*game.CSMSG)
+		msg := codec.BuildMessage(connect.CommandType_name[(int32)(csPack.Msg)] + "_CS")
+		msg, err = codec.CodecManager().Decode("pb", csPack.Body, msg)
+		if err == nil {
+			return msg
 		}
 	}
 	return nil

@@ -4,13 +4,13 @@ import (
 	"github.com/weseliu/alphanet/core"
 	"github.com/weseliu/alphanet/net"
 	"log"
-	"github.com/weseliu/alphanet/cmd/connect/encoder"
 	"reflect"
 	"github.com/weseliu/alphanet/cmd/global/protocal/connect"
 	"github.com/weseliu/alphanet/cmd/global/interfaces"
 	"time"
 	"github.com/weseliu/alphanet/cmd/global/ado"
 	"fmt"
+	"github.com/weseliu/alphanet/cmd/global/encoder"
 )
 
 type EventHandler struct {
@@ -27,9 +27,9 @@ func (Self *EventHandler) Start(peer net.Peer) {
 
 func (Self *EventHandler) onEventReceive(event *net.Event){
 	log.Print("EventReceive : ", string(event.Data))
-	var msg = encoder.Decode(event.Data)
+	var msg = encoder.DecodeCmd(event.Data)
 	if msg != nil {
-		core.MsgCenter().DispatchMessage(event.Session, msg)
+		core.MsgCenter().DispatchMessage(msg, event.Session)
 	}
 }
 
@@ -42,7 +42,8 @@ func (Self *EventHandler) onEventClosed(event *net.Event){
 	OnRoleExit(event.Session)
 }
 
-func (Self *EventHandler) OnMessage(session net.Session, msg interface{}) {
+func (Self *EventHandler) OnMessage(msg interface{}, param interface{}) {
+	session := param.(net.Session)
 	if _, ok := msg.(*connect.CMD_AUTH_CS); ok {
 		Self.onUserAuth(session, msg)
 	}

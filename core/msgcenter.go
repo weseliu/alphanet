@@ -1,13 +1,12 @@
 package core
 
 import (
-	"github.com/weseliu/alphanet/net"
 	"github.com/weseliu/alphanet/util"
 	"reflect"
 )
 
 type MsgHandler interface {
-	OnMessage(session net.Session, msg interface{})
+	OnMessage(msg interface{}, param interface{})
 }
 
 type msgCenter struct {
@@ -55,7 +54,7 @@ func (Self *msgCenter) UnRegisterAllMsgHandler(handler interface{}) {
 	}
 }
 
-func (Self *msgCenter) DispatchMessage(session net.Session, msg interface{}) {
+func (Self *msgCenter) DispatchMessage(msg interface{}, param interface{}) {
 	typ := reflect.TypeOf(msg)
 	if typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
@@ -65,7 +64,7 @@ func (Self *msgCenter) DispatchMessage(session net.Session, msg interface{}) {
 		Self.msgHandlers[typ].Traverse(func(item interface{}) bool {
 			var handler = item.(MsgHandler)
 			if handler != nil {
-				handler.OnMessage(session, msg)
+				handler.OnMessage(msg, param)
 			}
 			return true
 		})
