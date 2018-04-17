@@ -17,7 +17,7 @@ func ChannelStart() {
 		time.Duration(config.Int64("channel_timeout")),
 		int(config.Int64("channel_input_chan_size")),
 		int(config.Int64("channel_output_chan_size")))
-	proxyChannel.Listener()
+	proxyChannel.Connect()
 }
 
 func ChannelWait()  {

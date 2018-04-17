@@ -18,7 +18,7 @@ func EncodeCmd(cmd interface{}) []byte {
 		typ = typ.Elem()
 	}
 
-	cmdName := strings.TrimRight(typ.Name(),"_SC")
+	cmdName := strings.TrimSuffix(typ.Name(),"_SC")
 	scPack.Cmd = (connect.CommandType)(connect.CommandType_value[cmdName])
 	data, err := codec.CodecManager().Encode("pb", cmd)
 	if err == nil {
@@ -70,7 +70,7 @@ func DecodeMsg(data []byte) interface{} {
 	csMsg, err := codec.CodecManager().Decode("pb", data, &game.CSMSG{})
 	if err == nil{
 		csPack := csMsg.(*game.CSMSG)
-		msg := codec.BuildMessage(connect.CommandType_name[(int32)(csPack.Msg)] + "_CS")
+		msg := codec.BuildMessage(game.MessageType_name[(int32)(csPack.Msg)] + "_CS")
 		msg, err = codec.CodecManager().Decode("pb", csPack.Body, msg)
 		if err == nil {
 			return msg

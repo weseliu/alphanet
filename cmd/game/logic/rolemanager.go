@@ -39,7 +39,7 @@ func (Self *roleManager) onRoleLogin(roleId int64, msg *game.MSG_LOGIN_CS) {
 	log.Println("onRoleLogin : ", roleId)
 	rsp := &game.MSG_LOGIN_SC{
 		RetCode: 0,
-		RetMsg:[]byte("login success!"),
+		RetMsg:"login success!",
 	}
 	handler.SendMessage(roleId, rsp, 0)
 }

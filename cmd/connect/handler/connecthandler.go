@@ -5,6 +5,9 @@ import (
 	"github.com/weseliu/alphanet/util"
 	"time"
 	"github.com/weseliu/alphanet/net"
+	"log"
+	"github.com/weseliu/alphanet/cmd/global/protocal/connect"
+	"github.com/weseliu/alphanet/cmd/global/encoder"
 )
 
 var proxyChannel *channel.Channel
@@ -25,7 +28,6 @@ func ChannelStart() {
 
 func OnRoleEnter(roleId int64, session net.Session)  {
 	roleSessions[roleId] = session
-	SendRemoteMessage(roleId, []byte("player enter!"))
 }
 
 func OnRoleExit(session net.Session) {
@@ -37,10 +39,14 @@ func OnRoleExit(session net.Session) {
 }
 
 func fireRemoteMessage(bytes []byte, param int64) {
+	log.Println("fireRemoteMessage : ", bytes, "param :", param)
 	roleId := param
 	session := roleSessions[roleId]
 	if session != nil {
-		session.Send(bytes)
+		logic := &connect.CMD_LOGIC_SC{
+			LogicPkg : bytes,
+		}
+		session.Send(encoder.EncodeCmd(logic))
 	}
 }
 
